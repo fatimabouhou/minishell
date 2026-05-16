@@ -50,13 +50,55 @@ int check_syntax(char *line)
     return 0;
 }
 
+/* Fonction utilitaire pour extraire le prochain token en gérant les guillemets */
+static char *get_next_token(char **str_ptr) {
+    char *s = *str_ptr;
+    while (*s == ' ' || *s == '\t') s++;
+    if (*s == '\0') {
+        *str_ptr = s;
+        return NULL;
+    }
+
+    char *token = malloc(strlen(s) + 1);
+    int i = 0;
+    int in_quote = 0;
+
+    /* Gérer symboles spatiaux s'ils sont collés, ex: foo>bar (optionnel mais robuste) */
+    if (!in_quote && s[0] == '>' && s[1] == '>') {
+        token[0] = '>'; token[1] = '>'; token[2] = '\0';
+        *str_ptr = s + 2;
+        return token;
+    }
+    if (!in_quote && (strchr("<>|&", s[0]) != NULL)) {
+        token[0] = s[0]; token[1] = '\0';
+        *str_ptr = s + 1;
+        return token;
+    }
+
+    while (*s) {
+        /* Si on n'est pas dans des guillemets et qu'on croise un espace ou un symbole, on s'arrête */
+        if (!in_quote && (*s == ' ' || *s == '\t' || strchr("<>|&", *s) != NULL)) {
+            break;
+        }
+        
+        if (*s == '"') {
+            in_quote = !in_quote; /* On change d'état (entre ou sort des guillemets) */
+        } else {
+            token[i++] = *s; /* Copie le caractère */
+        }
+        s++;
+    }
+    token[i] = '\0';
+    *str_ptr = s;
+    return token;
+}
+
 /*
  * Analyse la ligne et retourne une liste chaînée de Command
  * Chaque Command correspond à une commande séparée par un pipe
  */
 Command *parse_input(char *line)
 {
-    /* allouer la première commande */
     Command *head = calloc(1, sizeof(Command));
     if (!head) {
         fprintf(stderr, "MyShell: erreur d'allocation mémoire\n");
@@ -64,43 +106,40 @@ Command *parse_input(char *line)
     }
     Command *current = head;
 
-    char buf[1024];
-    strncpy(buf, line, 1023);
-    buf[1023] = '\0';
-
-    char *token = strtok(buf, " \t");
+    char *p = line;
+    char *token = get_next_token(&p);
     int arg_i = 0;
 
     while (token != NULL) {
 
-        /* redirection sortie append >> */
         if (strcmp(token, ">>") == 0) {
-            token = strtok(NULL, " \t");
+            free(token);
+            token = get_next_token(&p);
             if (token) {
-                current->output_file = strdup(token);
+                current->output_file = token; // token est déjà alloué avec malloc
                 current->append = 1;
             }
 
-        /* redirection sortie > */
         } else if (strcmp(token, ">") == 0) {
-            token = strtok(NULL, " \t");
+            free(token);
+            token = get_next_token(&p);
             if (token) {
-                current->output_file = strdup(token);
+                current->output_file = token;
                 current->append = 0;
             }
 
-        /* redirection entrée < */
         } else if (strcmp(token, "<") == 0) {
-            token = strtok(NULL, " \t");
+            free(token);
+            token = get_next_token(&p);
             if (token)
-                current->input_file = strdup(token);
+                current->input_file = token;
 
-        /* exécution en arrière-plan & */
         } else if (strcmp(token, "&") == 0) {
+            free(token);
             current->background = 1;
 
-        /* pipe | → nouvelle commande */
         } else if (strcmp(token, "|") == 0) {
+            free(token);
             current->args[arg_i] = NULL;
             arg_i = 0;
 
@@ -113,19 +152,18 @@ Command *parse_input(char *line)
             current->next = next_cmd;
             current = next_cmd;
 
-        /* argument normal */
         } else {
             if (arg_i < MAX_ARGS - 1) {
-                current->args[arg_i++] = strdup(token);
+                current->args[arg_i++] = token; // token est déjà alloué par malloc
+            } else {
+                free(token);
             }
         }
 
-        token = strtok(NULL, " \t");
+        token = get_next_token(&p);
     }
 
-    /* terminer le tableau args avec NULL */
     current->args[arg_i] = NULL;
-
     return head;
 }
 
