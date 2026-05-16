@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include "parser.h"
-
 /*
  * Vérifie la syntaxe de la ligne
  * Retourne 0 si OK, -1 si erreur
@@ -10,7 +9,6 @@
 int check_syntax(char *line)
 {
     int i = 0;
-
     /* ignorer les espaces au début */
     while (line[i] == ' ' || line[i] == '\t')
         i++;
@@ -20,20 +18,16 @@ int check_syntax(char *line)
         fprintf(stderr, "MyShell: erreur de syntaxe : '|' inattendu\n");
         return -1;
     }
-
     int len = strlen(line);
-
     /* aller à la fin en ignorant espaces */
     int j = len - 1;
     while (j > 0 && (line[j] == ' ' || line[j] == '\t'))
         j--;
-
     /* pipe ou redirection en fin de ligne */
     if (line[j] == '|' || line[j] == '>' || line[j] == '<') {
         fprintf(stderr, "MyShell: erreur de syntaxe : symbole inattendu en fin de ligne\n");
         return -1;
     }
-
     /* vérifier > et < sans fichier après */
     for (int k = 0; k < len; k++) {
         if (line[k] == '>' || line[k] == '<') {
