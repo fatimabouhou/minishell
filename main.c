@@ -5,6 +5,7 @@
 #include "signals.h"
 #include "executor.h"
 #include "utils.h"
+#include "executor.h"
 
 int main(void)
 {
@@ -62,6 +63,14 @@ int main(void)
         ** (built-ins, pipes, redirections... sont gérés dans executor)
         */
         execute_command(cmd);
+        if (is_builtin(cmd))
+        {
+            execute_builtin(cmd);
+        }
+        else
+        {
+            execute_command(cmd);
+        }
 
         /*
         ** Libérer la mémoire
