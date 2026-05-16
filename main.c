@@ -1,11 +1,9 @@
 #include <stdio.h>
 
 #include "parser.h"
-#include "builtins.h"
 #include "signals.h"
 #include "executor.h"
 #include "utils.h"
-#include "executor.h"
 
 int main(void)
 {
@@ -13,7 +11,7 @@ int main(void)
     Command *cmd;
 
     /*
-    ** Installer la gestion des signaux
+    ** Installer les signaux
     */
     setup_signals();
 
@@ -28,13 +26,13 @@ int main(void)
         print_prompt();
 
         /*
-        ** Lire la commande utilisateur
+        ** Lire la ligne
         */
         if (fgets(line, sizeof(line), stdin) == NULL)
             break;
 
         /*
-        ** Supprimer le '\n'
+        ** Enlever le \n
         */
         remove_newline(line);
 
@@ -51,7 +49,7 @@ int main(void)
             continue;
 
         /*
-        ** Transformer la ligne en structure Command
+        ** Parsing
         */
         cmd = parse_input(line);
 
@@ -59,21 +57,12 @@ int main(void)
             continue;
 
         /*
-        ** Exécuter la commande
-        ** (built-ins, pipes, redirections... sont gérés dans executor)
+        ** Exécution
         */
         execute_command(cmd);
-        if (is_builtin(cmd))
-        {
-            execute_builtin(cmd);
-        }
-        else
-        {
-            execute_command(cmd);
-        }
 
         /*
-        ** Libérer la mémoire
+        ** Libération mémoire
         */
         free_command(cmd);
     }
