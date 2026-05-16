@@ -1,10 +1,9 @@
 #include <stdio.h>
-#include <string.h>
 
 #include "parser.h"
 #include "builtins.h"
-#include "executor.h"
 #include "signals.h"
+#include "utils.h"
 
 int main(void)
 {
@@ -24,34 +23,33 @@ int main(void)
         /*
         ** Afficher le prompt
         */
-        printf("MyShell> ");
-        fflush(stdout);
+        print_prompt();
 
         /*
-        ** Lire la commande utilisateur
+        ** Lire la commande
         */
         if (fgets(line, sizeof(line), stdin) == NULL)
             break;
 
         /*
-        ** Supprimer le \n final
+        ** Enlever le \n
         */
-        line[strcspn(line, "\n")] = '\0';
+        remove_newline(line);
 
         /*
-        ** Si ligne vide
+        ** Ligne vide
         */
         if (line[0] == '\0')
             continue;
 
         /*
-        ** Vérifier la syntaxe
+        ** Vérification syntaxique
         */
         if (check_syntax(line) != 0)
             continue;
 
         /*
-        ** Parser la commande
+        ** Parsing
         */
         cmd = parse_input(line);
 
@@ -59,22 +57,19 @@ int main(void)
             continue;
 
         /*
-        ** Si built-in → pas de fork
+        ** Built-in ?
         */
         if (is_builtin(cmd))
         {
             execute_builtin(cmd);
         }
-        /*
-        ** Sinon commande externe
-        */
         else
         {
-            execute_command(cmd);
+            printf("Commande externe detectee (executor pas encore implemente)\n");
         }
 
         /*
-        ** Libérer la mémoire
+        ** Libération mémoire
         */
         free_command(cmd);
     }
