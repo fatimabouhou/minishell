@@ -72,8 +72,7 @@ void execute_pipe(Command *cmd)
         close(pipefd[1]);
 
         /* gérer les redirections éventuelles de cette commande */
-        handle_red
-        directions(cmd);
+        handle_redirections(cmd);
 
         execvp(cmd->args[0], cmd->args);
         fprintf(stderr, "MyShell: commande inconnue : %s\n", cmd->args[0]);
@@ -123,11 +122,11 @@ void execute_command(Command *cmd)
     if (cmd == NULL || cmd->args[0] == NULL)
         return;
 
-    /* commande interne (cd, exit, history) */
-    if (is_builtin(cmd->args[0])) {
-        execute_builtin(cmd);
-        return;
-    }
+    // /* commande interne (cd, exit, history) */
+    // if (is_builtin(cmd->args[0])) {
+    //     execute_builtin(cmd);
+    //     return;
+    // }
 
     /* pipe détecté → exécution avec tubes */
     if (cmd->next != NULL) {

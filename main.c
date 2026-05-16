@@ -4,6 +4,7 @@
 #include "builtins.h"
 #include "signals.h"
 #include "utils.h"
+#include "executor.h"
 
 int main(void)
 {
@@ -65,7 +66,7 @@ int main(void)
         }
         else
         {
-            printf("Commande externe detectee (executor pas encore implemente)\n");
+            execute_command(cmd);
         }
 
         /*
