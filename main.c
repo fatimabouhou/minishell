@@ -8,6 +8,7 @@
 #include "utils.h"
 #include "history.h"
 #include "env.h"
+#include "autocomplete.h"
 
 int main(void)
 {
@@ -52,6 +53,27 @@ int main(void)
         if (strcmp(line, "history") == 0)
         {
             print_history();
+            continue;
+        }
+
+        // Auto-complétion - si la ligne finit par ?, afficher les suggestions
+        if (strlen(line) > 0 && line[strlen(line) - 1] == '?')
+        {
+            char prefix[1024];
+            strncpy(prefix, line, strlen(line) - 1);
+            prefix[strlen(line) - 1] = '\0';
+            
+            // Si c'est juste "?", afficher toutes les commandes
+            if (strlen(prefix) == 0)
+            {
+                printf("Commandes disponibles:\n");
+                suggest_commands("");
+            }
+            else
+            {
+                printf("Suggestions pour '%s':\n", prefix);
+                suggest_commands(prefix);
+            }
             continue;
         }
 

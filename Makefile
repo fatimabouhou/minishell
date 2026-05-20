@@ -12,7 +12,7 @@ test_executor: test_executor.c parser.c executor.c parser.h executor.h
 	@echo "✓ test_executor compilé → lance avec : ./test_executor"
 
 # ─── Projet final (quand binôme a fini) ─────────────────────────
-SRCS = main.c parser.c executor.c builtins.c signals.c utils.c history.c env.c
+SRCS = main.c parser.c executor.c builtins.c signals.c utils.c history.c env.c autocomplete.c
 OBJS = $(SRCS:.c=.o)
 
 myshell: $(OBJS)
