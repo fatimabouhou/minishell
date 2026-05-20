@@ -38,9 +38,6 @@ char *expand_variables(const char *str)
 			// Récupérer la valeur de la variable
 			var_value = getenv(var_name);
 			
-			// DEBUG
-			fprintf(stderr, "[DEBUG] Variable: %s = %s\n", var_name, var_value ? var_value : "(null)");
-			
 			if (var_value != NULL)
 			{
 				// Copier la valeur dans le résultat

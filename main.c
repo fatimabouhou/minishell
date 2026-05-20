@@ -77,29 +77,70 @@ int main(void)
         char *expanded_line = expand_variables(line);
         strcpy(line, expanded_line);
 
-        /*
-        ** Vérification syntaxique
-        */
-        if (check_syntax(line) != 0)
-            continue;
+        // Diviser par ; pour les commandes multiples
+        char *commands[100];
+        int cmd_count = 0;
+        char line_copy[1024];
+        char *cmd_ptr;
+        char *saveptr;
 
-        /*
-        ** Parsing
-        */
-        cmd = parse_input(line);
+        strcpy(line_copy, line);
+        cmd_ptr = strtok_r(line_copy, ";", &saveptr);
+        
+        while (cmd_ptr != NULL && cmd_count < 100)
+        {
+            // Supprimer les espaces au début et à la fin
+            while (*cmd_ptr == ' ' || *cmd_ptr == '\t')
+                cmd_ptr++;
+            int len = strlen(cmd_ptr);
+            while (len > 0 && (cmd_ptr[len - 1] == ' ' || cmd_ptr[len - 1] == '\t'))
+                len--;
+            if (len > 0)
+            {
+                char *trimmed_cmd = malloc(len + 1);
+                strncpy(trimmed_cmd, cmd_ptr, len);
+                trimmed_cmd[len] = '\0';
+                commands[cmd_count++] = trimmed_cmd;
+            }
+            cmd_ptr = strtok_r(NULL, ";", &saveptr);
+        }
 
-        if (cmd == NULL)
-            continue;
+        // Exécuter chaque commande
+        for (int i = 0; i < cmd_count; i++)
+        {
+            char *current_cmd = commands[i];
 
-        /*
-        ** Exécution
-        */
-        execute_command(cmd);
+            /*
+            ** Vérification syntaxique
+            */
+            if (check_syntax(current_cmd) != 0)
+            {
+                free(current_cmd);
+                continue;
+            }
 
-        /*
-        ** Libération mémoire
-        */
-        free_command(cmd);
+            /*
+            ** Parsing
+            */
+            cmd = parse_input(current_cmd);
+
+            if (cmd == NULL)
+            {
+                free(current_cmd);
+                continue;
+            }
+
+            /*
+            ** Exécution
+            */
+            execute_command(cmd);
+
+            /*
+            ** Libération mémoire
+            */
+            free_command(cmd);
+            free(current_cmd);
+        }
     }
 
     return 0;
