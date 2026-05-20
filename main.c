@@ -1,9 +1,13 @@
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "parser.h"
 #include "signals.h"
 #include "executor.h"
 #include "utils.h"
+#include "history.h"
+#include "env.h"
 
 int main(void)
 {
@@ -14,6 +18,7 @@ int main(void)
     ** Installer les signaux
     */
     setup_signals();
+    init_history();
 
     /*
     ** Boucle principale du shell
@@ -41,6 +46,36 @@ int main(void)
         */
         if (line[0] == '\0')
             continue;
+
+        add_to_history(line);
+
+        if (strcmp(line, "history") == 0)
+        {
+            print_history();
+            continue;
+        }
+
+        // Ré-exécution d'une commande avec !n
+        if (line[0] == '!' && line[1] != '\0')
+        {
+            int history_index = atoi(&line[1]);
+            char *history_cmd = get_history_entry(history_index);
+            
+            if (history_cmd != NULL)
+            {
+                printf("%s\n", history_cmd);
+                strcpy(line, history_cmd);
+            }
+            else
+            {
+                printf("Commande non trouvée dans l'historique\n");
+                continue;
+            }
+        }
+
+        // Expansion des variables d'environnement
+        char *expanded_line = expand_variables(line);
+        strcpy(line, expanded_line);
 
         /*
         ** Vérification syntaxique
